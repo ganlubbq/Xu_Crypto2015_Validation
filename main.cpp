@@ -21,11 +21,9 @@
 int main() {
 	using boost::lexical_cast;
 
-	auto const
-		snow = lexical_cast<NTL::GF2X>("[1 0 0 1 0 1 0 1 1]"),
-		aes = lexical_cast<NTL::GF2X>("[1 1 0 1 1 0 0 0 1]");
+	// Setup SNOW
+	auto const snow = lexical_cast<NTL::GF2X>("[1 0 0 1 0 1 0 1 1]");
 	BOOST_ASSERT(NTL::IterIrredTest(snow));
-	BOOST_ASSERT(NTL::IterIrredTest(aes));
 	NTL::GF2E::init(snow);
 
 	NTL::GF2EX const snow_extended = [] {
@@ -40,13 +38,14 @@ int main() {
 	}();
 	BOOST_ASSERT(NTL::DetIrredTest(snow_extended));
 
+	// Generate a random sequence
 	size_t constexpr LFSR = 16;
-	std::array<NTL::GF2EX, LFSR * 3> State = {};
+	std::array<NTL::GF2EX, LFSR * 3> State;
+
 	SetSeed(NTL::conv<NTL::ZZ>(std::random_device{}()));
 	for (size_t i = 0; i != LFSR; ++i) {
 		State[i] = NTL::random_GF2EX(deg(snow_extended));
 	}
-
 	auto const
 		alpha = lexical_cast<NTL::GF2EX>("[[] [1]]"),
 		alpha_inverse = InvMod(alpha, snow_extended);
@@ -54,6 +53,7 @@ int main() {
 		State[i] = (alpha_inverse * State[i - 5] + State[i - 14] + alpha * State[i - 16]) % snow_extended;
 	}
 
+	// Define test functions
 	auto const print = [](auto const& f) {
 		std::cout << "===================================================\n";
 		std::cout << "Coefficients: \n";
@@ -63,7 +63,6 @@ int main() {
 		std::cout << "Length: " << boost::size(f) << "\n";
 		std::cout << "===================================================\n";
 	};
-
 	auto const Test = [&State, &print](auto const& M) {
 		print(BerlekampMassey(State,
 			[&](auto& a, auto const& b) {a = (a + b) % M;},
@@ -73,10 +72,15 @@ int main() {
 		));
 	};
 
+	// Reconstruct the LFSR on the SNOW field
 	std::cout << "With SNOW\n";
 	Test(snow_extended);
 
+	// Reconstruct the LFSR on the AES field
+	// Note that the binary representation of the sequence is not changed as expected.
 	std::cout << "With AES\n";
+	auto const aes = lexical_cast<NTL::GF2X>("[1 1 0 1 1 0 0 0 1]");
+	BOOST_ASSERT(NTL::IterIrredTest(aes));
 	NTL::GF2E::init(aes);
 	NTL::GF2EX const aes_extended = lexical_cast<NTL::GF2EX>(
 		"[[1 1 1 0 0 1 1] [0 0 1 0 0 1 1] [1 0 1 1 0 0 0 1] [0 0 1 1 1 0 1] [0 0 0 1 0 0 1] [1]]"
