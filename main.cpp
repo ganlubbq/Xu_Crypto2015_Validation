@@ -1,8 +1,8 @@
 /* This is intended for validating the Appendix C in 
    Zhang B, Xu C, Meier W. Fast Correlation Attacks over Extension Fields, Large-Unit Linear Approximation and Cryptanalysis of SNOW 2.0[M]
      //Advances in Cryptology--CRYPTO 2015. Springer Berlin Heidelberg, 2015: 643-662.
-   The NTL library is used for finite field arithmetics.
    It seems they are wrong. Thus, the improvement is not as significant as declared.
+   The NTL library is used for finite field arithmetics. The BOOST library is also used.
 
    Author: Yuan Yao
    Mail: yaoyuan1216@gmail.com
