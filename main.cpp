@@ -28,13 +28,16 @@ int main() {
 	BOOST_ASSERT(NTL::IterIrredTest(aes));
 	NTL::GF2E::init(snow);
 
-	NTL::GF2EX snow_extended;// 在AES域上也是不可约的
-	auto const beta = lexical_cast<NTL::GF2E>("[0 1]");
-	SetCoeff(snow_extended, 0, power(beta, 239));
-	SetCoeff(snow_extended, 1, power(beta, 48));
-	SetCoeff(snow_extended, 2, power(beta, 245));
-	SetCoeff(snow_extended, 3, power(beta, 23));
-	SetCoeff(snow_extended, 4);
+	NTL::GF2EX const snow_extended = [] {
+		auto const beta = lexical_cast<NTL::GF2E>("[0 1]");
+		NTL::GF2EX result;
+		SetCoeff(result, 0, power(beta, 239));
+		SetCoeff(result, 1, power(beta, 48));
+		SetCoeff(result, 2, power(beta, 245));
+		SetCoeff(result, 3, power(beta, 23));
+		SetCoeff(result, 4);
+		return result;
+	}();
 	BOOST_ASSERT(NTL::DetIrredTest(snow_extended));
 
 	size_t constexpr LFSR = 16;
