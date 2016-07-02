@@ -17,6 +17,7 @@
 #include <array>
 #include <iostream>
 #include <random>
+#include <utility>
 
 int main() {
 	using boost::lexical_cast;
@@ -40,17 +41,17 @@ int main() {
 
 	// Generate a random sequence
 	size_t constexpr LFSR = 16;
-	std::array<NTL::GF2EX, LFSR * 3> State;
+	std::array<NTL::GF2EX, LFSR * 3> _State;
 
 	SetSeed(NTL::conv<NTL::ZZ>(std::random_device{}()));
 	for (size_t i = 0; i != LFSR; ++i) {
-		State[i] = NTL::random_GF2EX(deg(snow_extended));
+		_State[i] = NTL::random_GF2EX(deg(snow_extended));
 	}
 	auto const
 		alpha = lexical_cast<NTL::GF2EX>("[[] [1]]"),
 		alpha_inverse = InvMod(alpha, snow_extended);
-	for (size_t i = LFSR; i != State.size(); ++i) {
-		State[i] = (alpha_inverse * State[i - 5] + State[i - 14] + alpha * State[i - 16]) % snow_extended;
+	for (size_t i = LFSR; i != _State.size(); ++i) {
+		_State[i] = (alpha_inverse * _State[i - 5] + _State[i - 14] + alpha * _State[i - 16]) % snow_extended;
 	}
 
 	// Define test functions
@@ -63,7 +64,7 @@ int main() {
 		std::cout << "Length: " << boost::size(f) << "\n";
 		std::cout << "===================================================\n";
 	};
-	auto const Test = [&State, &print](auto const& M) {
+	auto const Test = [State = std::as_const(_State), print](auto const& M) {
 		print(BerlekampMassey(State,
 			[&](auto& a, auto const& b) {a = (a + b) % M;},
 			[&](auto& a, auto const& b) {a = (a - b) % M;},
