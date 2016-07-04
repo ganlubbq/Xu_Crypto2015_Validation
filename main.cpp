@@ -14,10 +14,23 @@
 #include <NTL/GF2XFactoring.h>
 #include <NTL/GF2EXFactoring.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/predef/compiler.h>
 #include <array>
 #include <iostream>
 #include <random>
 #include <utility>
+
+#if !BOOST_COMP_MSVC
+namespace std{
+    template<typename T>
+    using add_const_t = typename add_const<T>::type;
+
+    template<typename T>
+    constexpr add_const_t<T>& as_const(T& t) noexcept{
+        return t;
+    }
+} 
+#endif
 
 int main() {
 	using boost::lexical_cast;
